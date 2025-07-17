@@ -27,7 +27,7 @@ The dataset consists of images of 43 distinct traffic sign classes, each associa
  
 ### CSV File
 
-The dataset also includes a CSV file with two columns:
+The dataset also it includes a CSV file with two columns:
 
 1. **ClassID**: Represents the class ID of the traffic sign (integer).
 2. **SignName**: Represents the name of the traffic sign (string).
