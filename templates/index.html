@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Sign Classifier</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Traffic Sign Classifier</h1>
+            <p>Upload an image of a traffic sign to classify it</p>
+        </header>
+
+        <div class="upload-section">
+            <form id="uploadForm" enctype="multipart/form-data">
+                <div class="file-upload-wrapper">
+                    <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg" required>
+                    <label for="fileInput" class="file-upload-label">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Choose an image...</span>
+                    </label>
+                </div>
+                <button type="submit" class="upload-btn" disabled>Classify Image</button>
+            </form>
+        </div>
+
+        <div class="loading" id="loading" style="display: none;">
+            <div class="spinner"></div>
+            <p>Processing your image...</p>
+        </div>
+
+        <div class="result-section" id="resultSection" style="display: none;">
+            <div class="image-container">
+                <img id="uploadedImage" src="" alt="Uploaded Image">
+            </div>
+            <div class="prediction-result">
+                <h3>Prediction Result:</h3>
+                <div class="result-content">
+                    <span class="sign-name" id="signName"></span>
+                    <span class="confidence" id="confidence"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-message" id="errorMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const uploadForm = document.getElementById('uploadForm');
+        const uploadBtn = document.querySelector('.upload-btn');
+        const loading = document.getElementById('loading');
+        const resultSection = document.getElementById('resultSection');
+        const errorMessage = document.getElementById('errorMessage');
+        const uploadedImage = document.getElementById('uploadedImage');
+        const signName = document.getElementById('signName');
+        const confidence = document.getElementById('confidence');
+
+        // Enable/disable upload button based on file selection
+        fileInput.addEventListener('change', function() {
+            uploadBtn.disabled = !this.files.length;
+            
+            // Preview selected image
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    uploadedImage.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle form submission
+        uploadForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            
+            // Show loading state
+            loading.style.display = 'block';
+            resultSection.style.display = 'none';
+            errorMessage.style.display = 'none';
+            uploadBtn.disabled = true;
+            
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+                
+                if (data.success) {
+                    uploadedImage.src = 'data:image/png;base64,' + data.image_data;
+                    signName.textContent = data.sign_name;
+                    confidence.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
+                    resultSection.style.display = 'block';
+                } else {
+                    errorMessage.textContent = data.error;
+                    errorMessage.style.display = 'block';
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                uploadBtn.disabled = false;
+                errorMessage.textContent = 'An error occurred while processing the image.';
+                errorMessage.style.display = 'block';
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
