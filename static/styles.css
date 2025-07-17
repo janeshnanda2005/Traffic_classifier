@@ -6,27 +6,10 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(-45deg, #667eea, #0cb8cf, #4de7a7, #e7be4c);
-    background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     padding: 20px;
-    margin: 0;
 }
-
-/* Keyframes for animation */
-@keyframes gradientShift {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 25%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
-}
-
 
 .container {
     max-width: 800px;
@@ -38,7 +21,7 @@ body {
 }
 
 header {
-    background: linear-gradient(135deg, #667eea 0%, #6695d2 100%);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
     padding: 40px 30px;
     text-align: center;
