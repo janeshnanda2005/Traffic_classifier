@@ -1,0 +1,125 @@
+from flask import Flask, render_template, request, jsonify
+import pandas as pd
+import numpy as np
+from PIL import Image
+import os
+import base64
+from io import BytesIO
+from datetime import datetime
+
+app = Flask(__name__)
+
+# Model configuration: using traffic-sign.h5 (the DenseNet models have compatibility issues with current Keras)
+MODEL_FILENAME = 'traffic-sign.h5'
+MODEL_PATH = os.path.join(os.path.dirname(__file__), MODEL_FILENAME)
+
+# Lazy-loaded model: TensorFlow and the model are imported/loaded only when needed
+model = None
+
+def load_model():
+    """Load the Keras model lazily. This imports TensorFlow only when the model is actually needed.
+
+    Raises the original exception after printing a traceback to help debugging model deserialization issues.
+    """
+    global model
+    if model is not None:
+        return model
+
+    import traceback
+    try:
+        # import TensorFlow locally to avoid heavy initialization on module import/py_compile
+        import tensorflow as tf
+
+        if not os.path.exists(MODEL_PATH):
+            raise FileNotFoundError(
+                f"Model file not found: {MODEL_PATH}\nPlease place your 'traffic-sign.h5' file in the project root."
+            )
+
+        print(f"Loading model from {MODEL_PATH} (this may take a few seconds)...")
+        model = tf.keras.models.load_model(MODEL_PATH, compile=False)
+        print("Model loaded successfully.")
+        return model
+
+    except Exception as e:
+        print(f"Error loading model from {MODEL_PATH}: {e}")
+        traceback.print_exc()
+        # Re-raise so callers (process_image) get the informative exception
+        raise
+val = pd.read_csv("signname.csv")
+
+# Upload folder config
+UPLOAD_FOLDER = 'static/uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
+
+# Note: Firebase logging removed — this app now only performs local image prediction
+
+def process_image(image_file):
+    try:
+        # Load and convert image
+        image = Image.open(image_file).convert("RGB")
+        image_resized = image.resize((32, 32))
+        image_array = np.expand_dims(np.array(image_resized), axis=0)
+
+        # Predict: ensure model is loaded lazily
+        _model = model or load_model()
+        prediction = _model.predict(image_array)
+        predicted_class = int(np.argmax(prediction, axis=1)[0])
+        confidence = float(np.max(prediction))
+
+        # Get sign name
+        sign_name = "Unknown traffic sign"
+        try:
+            matching_rows = val[val['ClassId'] == predicted_class]
+            if not matching_rows.empty:
+                sign_name = matching_rows['SignName'].iloc[0]
+        except Exception as e:
+            print(f"Error getting sign name: {e}")
+
+        # Encode image to base64 for frontend display
+        buffer = BytesIO()
+        image.save(buffer, format="PNG")
+        img_base64 = base64.b64encode(buffer.getvalue()).decode()
+
+        return {
+            'success': True,
+            'predicted_class': int(predicted_class),
+            'sign_name': sign_name,
+            'confidence': confidence,
+            'image_data': img_base64,
+            'timestamp': datetime.now().isoformat()[:19]
+        }
+
+    except Exception as e:
+        print(f"Error processing image: {e}")
+        return {
+            'success': False,
+            'error': str(e)
+        }
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No file uploaded'})
+
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'success': False, 'error': 'No file selected'})
+
+    if file and file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
+        result = process_image(file)
+        return jsonify(result)
+    else:
+        return jsonify({'success': False, 'error': 'Invalid file type. Use PNG, JPG, or JPEG.'})
+
+# Firebase/test endpoints removed
+
+if __name__ == '__main__':
+    print("🚀 Starting Flask app...")
+    print("Firebase logging removed — starting prediction-only server")
+    app.run(debug=True, port=5000)

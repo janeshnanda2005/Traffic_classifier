@@ -3,116 +3,369 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Traffic Sign Classifier</title>
+    <title>AI Traffic Sign Classifier | Deep Learning</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Traffic Sign Classifier</h1>
-            <p>Upload an image of a traffic sign to classify it</p>
-        </header>
-
-        <div class="upload-section">
-            <form id="uploadForm" enctype="multipart/form-data">
-                <div class="file-upload-wrapper">
-                    <input type="file" id="fileInput" name="file" accept=".png,.jpg,.jpeg" required>
-                    <label for="fileInput" class="file-upload-label">
-                        <span class="upload-icon">📁</span>
-                        <span class="upload-text">Choose an image...</span>
-                    </label>
-                </div>
-                <button type="submit" class="upload-btn" disabled>Classify Image</button>
-            </form>
-        </div>
-
-        <div class="loading" id="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Processing your image...</p>
-        </div>
-
-        <div class="result-section" id="resultSection" style="display: none;">
-            <div class="image-container">
-                <img id="uploadedImage" src="" alt="Uploaded Image">
+    <!-- Header Section -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-traffic-light"></i>
+                <h1>AI Traffic Sign Analyzer</h1>
             </div>
-            <div class="prediction-result">
-                <h3>Prediction Result:</h3>
-                <div class="result-content">
-                    <span class="sign-name" id="signName"></span>
-                    <span class="confidence" id="confidence"></span>
+            <p class="tagline">Powered by Deep Learning</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="container">
+            <!-- Upload Section -->
+            <section class="upload-section">
+                <div class="upload-card">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h2>Upload Traffic Sign Image</h2>
+                    <p class="subtitle">Get instant AI-powered analysis and classification</p>
+                    
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" accept="image/*" hidden>
+                        <div class="upload-placeholder">
+                            <i class="fas fa-image"></i>
+                            <p>Drag & drop your image here</p>
+                            <p class="or-text">or</p>
+                            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                                <i class="fas fa-folder-open"></i> Browse Files
+                            </button>
+                            <p class="file-info">Supports JPG, PNG, JPEG (Max 16MB)</p>
+                        </div>
+                        <div class="preview-container" id="previewContainer" style="display: none;">
+                            <img id="previewImage" src="" alt="Preview">
+                            <button class="btn-remove" onclick="removeImage()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-analyze" id="analyzeBtn" style="display: none;">
+                        <i class="fas fa-robot"></i> Analyze with AI
+                    </button>
+
+                    <div class="loading" id="loading" style="display: none;">
+                        <div class="spinner"></div>
+                        <p>Analyzing image with AI...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Results Section -->
+            <section class="results-section" id="resultsSection" style="display: none;">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i> Analysis Results
+                </h2>
+
+                <div class="results-grid">
+                    <!-- Final Verified Prediction -->
+                    <div class="result-card verified-card">
+                        <div class="card-header verified-header">
+                            <i class="fas fa-check-circle"></i>
+                            <h3>Final Prediction</h3>
+                            <span class="badge verified-badge" id="verificationBadge">VERIFIED</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="prediction-display">
+                                <div class="sign-result">
+                                    <label>Traffic Sign:</label>
+                                    <h4 id="finalSignName">-</h4>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <label>Confidence Score</label>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="finalConfidenceFill"></div>
+                                    <span class="confidence-text" id="finalConfidenceText">0%</span>
+                                </div>
+                                <small id="reliabilityText" style="color: #64748b; margin-top: 5px; display: block;"></small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Analysis Section -->
+                <div class="analysis-section">
+                    <h3><i class="fas fa-sparkles"></i> Detailed AI Analysis</h3>
+                    <div class="analysis-card">
+                        <div class="ai-analysis" id="aiAnalysis">
+                            <div class="analysis-loading">
+                                <i class="fas fa-magic"></i>
+                                <p>Generating detailed analysis...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Original Cards (Hidden by default, shown for reference) -->
+                <div class="technical-details" style="display: none;">
+                    <!-- CNN Model Prediction -->
+                    <div class="result-card model-card">
+                        <div class="card-header">
+                            <i class="fas fa-brain"></i>
+                            <h3>Deep Learning Model</h3>
+                            <span class="badge">CNN Classifier</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="prediction-display">
+                                <div class="sign-result">
+                                    <label>Detected Sign:</label>
+                                    <h4 id="signName">-</h4>
+                                </div>
+                                <div class="class-result">
+                                    <label>Class ID:</label>
+                                    <span id="classId">-</span>
+                                </div>
+                            </div>
+                            <div class="confidence-meter">
+                                <label>Confidence Score</label>
+                                <div class="confidence-bar">
+                                    <div class="confidence-fill" id="confidenceFill"></div>
+                                    <span class="confidence-text" id="confidenceText">0%</span>
+                                </div>
+                            </div>
+                            <div class="timestamp">
+                                <i class="fas fa-clock"></i>
+                                <span id="timestamp">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Google Gemini AI Analysis -->
+                    <div class="result-card ai-card">
+                        <div class="card-header">
+                            <i class="fas fa-sparkles"></i>
+                            <h3>Google Gemini AI</h3>
+                            <span class="badge ai-badge">AI Analysis</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="ai-analysis" id="aiAnalysis">
+                                <div class="analysis-loading">
+                                    <i class="fas fa-magic"></i>
+                                    <p>Generating detailed analysis...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Image Display -->
+                <div class="analyzed-image-section">
+                    <h3><i class="fas fa-image"></i> Analyzed Image</h3>
+                    <div class="analyzed-image-container">
+                        <img id="analyzedImage" src="" alt="Analyzed traffic sign">
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4><i class="fas fa-info-circle"></i> About</h4>
+                    <p>Advanced traffic sign classification using Deep Learning CNN and AI for comprehensive analysis.</p>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-cog"></i> Technology Stack</h4>
+                    <ul>
+                        <li><i class="fas fa-check"></i> TensorFlow / Keras</li>
+                        <li><i class="fas fa-check"></i> Google Gemini AI</li>
+                        <li><i class="fas fa-check"></i> Flask Backend</li>
+                        <li><i class="fas fa-check"></i> Modern UI/UX</li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4><i class="fas fa-shield-alt"></i> Features</h4>
+                    <ul>
+                        <li><i class="fas fa-check"></i> 43 Traffic Sign Classes</li>
+                        <li><i class="fas fa-check"></i> Real-time Prediction</li>
+                        <li><i class="fas fa-check"></i> AI-Powered Insights</li>
+                        <li><i class="fas fa-check"></i> High Accuracy</li>
+                    </ul>
                 </div>
             </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 AI Traffic Sign Analyzer. Built with <i class="fas fa-heart"></i> using AI & Deep Learning</p>
+            </div>
         </div>
-
-        <div class="error-message" id="errorMessage" style="display: none;"></div>
-    </div>
+    </footer>
 
     <script>
         const fileInput = document.getElementById('fileInput');
-        const uploadForm = document.getElementById('uploadForm');
-        const uploadBtn = document.querySelector('.upload-btn');
+        const uploadArea = document.getElementById('uploadArea');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+        const analyzeBtn = document.getElementById('analyzeBtn');
         const loading = document.getElementById('loading');
-        const resultSection = document.getElementById('resultSection');
-        const errorMessage = document.getElementById('errorMessage');
-        const uploadedImage = document.getElementById('uploadedImage');
-        const signName = document.getElementById('signName');
-        const confidence = document.getElementById('confidence');
+        const resultsSection = document.getElementById('resultsSection');
 
-        // Enable/disable upload button based on file selection
-        fileInput.addEventListener('change', function() {
-            uploadBtn.disabled = !this.files.length;
-            
-            // Preview selected image
-            if (this.files.length > 0) {
-                const file = this.files[0];
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    uploadedImage.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
             }
         });
 
-        // Handle form submission
-        uploadForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            
-            // Show loading state
-            loading.style.display = 'block';
-            resultSection.style.display = 'none';
-            errorMessage.style.display = 'none';
-            uploadBtn.disabled = true;
-            
-            fetch('/predict', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                loading.style.display = 'none';
-                uploadBtn.disabled = false;
-                
-                if (data.success) {
-                    uploadedImage.src = 'data:image/png;base64,' + data.image_data;
-                    signName.textContent = data.sign_name;
-                    confidence.textContent = `Confidence: ${(data.confidence * 100).toFixed(1)}%`;
-                    resultSection.style.display = 'block';
-                } else {
-                    errorMessage.textContent = data.error;
-                    errorMessage.style.display = 'block';
-                }
-            })
-            .catch(error => {
-                loading.style.display = 'none';
-                uploadBtn.disabled = false;
-                errorMessage.textContent = 'An error occurred while processing the image.';
-                errorMessage.style.display = 'block';
-                console.error('Error:', error);
-            });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
         });
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+                document.querySelector('.upload-placeholder').style.display = 'none';
+                analyzeBtn.style.display = 'block';
+                resultsSection.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeImage() {
+            fileInput.value = '';
+            previewContainer.style.display = 'none';
+            document.querySelector('.upload-placeholder').style.display = 'block';
+            analyzeBtn.style.display = 'none';
+            resultsSection.style.display = 'none';
+        }
+
+        analyzeBtn.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            loading.style.display = 'block';
+            analyzeBtn.style.display = 'none';
+            resultsSection.style.display = 'none';
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    displayResults(data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error analyzing image: ' + error.message);
+            } finally {
+                loading.style.display = 'none';
+                analyzeBtn.style.display = 'block';
+            }
+        });
+
+        function displayResults(data) {
+            // Update Final Prediction (models validated internally)
+            document.getElementById('finalSignName').textContent = data.sign_name;
+            document.getElementById('reliabilityText').textContent = `Confidence: ${(data.confidence * 100).toFixed(2)}%`;
+            
+            // Update verification badge
+            const verificationBadge = document.getElementById('verificationBadge');
+            verificationBadge.textContent = 'ANALYZED';
+            verificationBadge.style.background = 'rgba(16, 185, 129, 0.3)';
+
+            // Update final confidence
+            const confidencePercent = (data.confidence * 100).toFixed(2);
+            document.getElementById('finalConfidenceText').textContent = confidencePercent + '%';
+            document.getElementById('finalConfidenceFill').style.width = confidencePercent + '%';
+            
+            // Color code final confidence
+            const finalFill = document.getElementById('finalConfidenceFill');
+            if (data.confidence >= 0.8) {
+                finalFill.style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+            } else if (data.confidence >= 0.5) {
+                finalFill.style.background = 'linear-gradient(90deg, #f59e0b, #fbbf24)';
+            } else {
+                finalFill.style.background = 'linear-gradient(90deg, #ef4444, #f87171)';
+            }
+
+            // Update CNN model results (internal validation handled by backend)
+            document.getElementById('signName').textContent = data.sign_name;
+            document.getElementById('classId').textContent = `Class ${data.predicted_class || 0}`;
+            document.getElementById('timestamp').textContent = data.timestamp || new Date().toLocaleString();
+
+            // Safely handle confidence - use final confidence if cnn_confidence not present
+            const displayConfidence = data.cnn_confidence !== undefined ? data.cnn_confidence : data.confidence;
+            const cnnConfPercent = (displayConfidence * 100).toFixed(2);
+            document.getElementById('confidenceText').textContent = cnnConfPercent + '%';
+            document.getElementById('confidenceFill').style.width = cnnConfPercent + '%';
+
+            // Update AI Analysis
+            const aiAnalysis = document.getElementById('aiAnalysis');
+            aiAnalysis.innerHTML = formatAIAnalysis(data.ai_description);
+
+            // Update analyzed image
+            document.getElementById('analyzedImage').src = 'data:image/png;base64,' + data.image_data;
+
+            // Show results with animation
+            resultsSection.style.display = 'block';
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function formatAIAnalysis(text) {
+            // Format the AI analysis text with better styling
+            const lines = text.split('\n');
+            let formatted = '<div class="ai-content">';
+            
+            lines.forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                // Bold headers (lines with ** or numbered items)
+                if (line.match(/^\*\*.*\*\*/) || line.match(/^\d+\./)) {
+                    line = line.replace(/\*\*/g, '');
+                    formatted += `<h4><i class="fas fa-chevron-right"></i> ${line}</h4>`;
+                } else if (line.startsWith('*') || line.startsWith('-')) {
+                    formatted += `<p class="bullet-point"><i class="fas fa-circle"></i> ${line.substring(1).trim()}</p>`;
+                } else {
+                    formatted += `<p>${line}</p>`;
+                }
+            });
+            
+            formatted += '</div>';
+            return formatted;
+        }
     </script>
 </body>
 </html>
