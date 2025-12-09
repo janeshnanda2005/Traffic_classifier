@@ -174,84 +174,6 @@ Check the application health status.
 }
 ```
 
-## 🌐 Deployment
-
-### Deploy to Heroku
-
-1. **Install Heroku CLI**
-```bash
-# Install Heroku CLI (if not installed)
-curl https://cli-assets.heroku.com/install.sh | sh
-```
-
-2. **Login to Heroku**
-```bash
-heroku login
-```
-
-3. **Create a new Heroku app**
-```bash
-heroku create your-app-name
-```
-
-4. **Set environment variables**
-```bash
-heroku config:set FLASK_DEBUG=false
-heroku config:set LOG_LEVEL=INFO
-heroku config:set EAGER_LOAD_MODEL=true
-```
-
-5. **Deploy**
-```bash
-git push heroku main
-```
-
-6. **Open your app**
-```bash
-heroku open
-```
-
-### Deploy with Docker
-
-1. **Build the Docker image**
-```bash
-docker build -t traffic-classifier .
-```
-
-2. **Run the container**
-```bash
-docker run -p 5000:5000 -v $(pwd)/traffic-sign.h5:/app/traffic-sign.h5 traffic-classifier
-```
-
-Or use Docker Compose:
-```bash
-docker-compose up
-```
-
-### Deploy to Railway
-
-1. Install Railway CLI
-```bash
-npm install -g @railway/cli
-```
-
-2. Login and deploy
-```bash
-railway login
-railway init
-railway up
-```
-
-### Deploy to AWS/GCP/Azure
-
-- Use the provided `Dockerfile` for containerized deployment
-- Configure environment variables through cloud provider console
-- Ensure `traffic-sign.h5` is available (upload to cloud storage if needed)
-
-## ⚙️ Configuration
-
-The application uses `config.py` for configuration with environment variable support.
-
 ### Environment Variables
 
 | Variable | Default | Description |
@@ -387,7 +309,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 For issues and questions:
 - Create an issue on GitHub
-- Contact: [Your Email]
+- Contact: [janeshnanda@gmail.com]
 
 ---
 
