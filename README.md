@@ -38,6 +38,8 @@ A deep learning web application for classifying German traffic signs using Tenso
 ## Metrics
 
 ![Model Metrics](met.png)
+The following chart shows how training and validation accuracy and loss evolve over epochs, illustrating the model’s convergence and overfitting behavior, along with the final test accuracy obtained on the held-out GTSRB dataset.
+
 
 
 ## 🎥 Demo
