@@ -33,6 +33,13 @@ A deep learning web application for classifying German traffic signs using Tenso
 - **Logging**: Comprehensive logging for debugging and monitoring
 - **Production Ready**: Configured for deployment on Heroku, Railway, AWS, etc.
 
+## 🧠 Model Information
+
+## Metrics
+
+![Model Metrics](met.png)
+
+
 ## 🎥 Demo
 
 The application provides a simple interface to:
